@@ -1,8 +1,8 @@
-import 'package:calculator/button_values.dart';
 import 'package:flutter/material.dart';
+import 'package:calculator/button_values.dart';
 
 class CalculatorScreen extends StatefulWidget {
-  const CalculatorScreen({super.key});
+  const CalculatorScreen({Key? key}) : super(key: key);
 
   @override
   State<CalculatorScreen> createState() => _CalculatorScreenState();
@@ -16,38 +16,53 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final double buttonSize = screenSize.width / 20; // Further reduced button size
+    final double buttonSize = screenSize.width / 20;
 
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       body: SafeArea(
         bottom: false,
         child: Center(
           child: Container(
-            width: screenSize.width * 0.35, // Further reduce the overall container width
-            height: screenSize.height * 0.5, // Further reduce the overall container height
+            width: screenSize.width * 0.4,
+            height: screenSize.height * 0.6,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(16),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Center the calculator vertically
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                // Display output
                 Expanded(
                   child: SingleChildScrollView(
                     reverse: true,
-                    child: Container(
-                      alignment: Alignment.bottomRight,
-                      padding: const EdgeInsets.all(4), // Further reduced padding
-                      child: Text(
-                        "$number1$operand$number2".isEmpty ? "0" : "$number1$operand$number2",
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // Further reduced font size
-                        textAlign: TextAlign.end,
-                      ),
+                    child: Text(
+                      "$number1$operand$number2".isEmpty ? "0" : "$number1$operand$number2",
+                      style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.end,
                     ),
                   ),
                 ),
-                // Buttons
+                const SizedBox(height: 16),
                 Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
                   children: Btn.buttonValues.map((value) {
-                    final width = value == Btn.n0 ? buttonSize * 2 : buttonSize;
-                    return SizedBox(width: width, height: buttonSize, child: buildButton(value));
+                    final width = value == Btn.n0 ? buttonSize * 2 + 10 : buttonSize;
+                    return SizedBox(
+                      width: width,
+                      height: buttonSize,
+                      child: buildButton(value),
+                    );
                   }).toList(),
                 ),
               ],
@@ -59,29 +74,20 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   Widget buildButton(String value) {
-    return Padding(
-      padding: const EdgeInsets.all(0.5), // Further reduced padding
-      child: Material(
-        color: getBtnColor(value),
-        clipBehavior: Clip.hardEdge,
-        shape: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.white24),
-          borderRadius: BorderRadius.circular(25), // Adjusted border radius
-        ),
-        child: InkWell(
-          onTap: () => onBtnTap(value),
-          child: Center(
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12), // Further reduced font size
-            ),
-          ),
-        ),
+    return MaterialButton(
+      onPressed: () => onBtnTap(value),
+      color: getBtnColor(value),
+      textColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        value,
+        style: const TextStyle(fontSize: 24),
       ),
     );
   }
 
-  // Handle button tap
   void onBtnTap(String value) {
     if (value == Btn.del) {
       delete();
@@ -92,11 +98,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     } else if (value == Btn.calculate) {
       calculate();
     } else {
-      appendValue(value);
+      appendValue(value); // Calling the appendValue method here
     }
   }
 
-  // Calculate the result
   void calculate() {
     if (number1.isEmpty || operand.isEmpty || number2.isEmpty) return;
 
@@ -120,13 +125,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     }
 
     setState(() {
-      number1 = result.toStringAsPrecision(3).replaceAll(RegExp(r'\.0$'), '');
+      number1 = result.toStringAsFixed(2); // Adjusted to show two decimal places
       operand = "";
       number2 = "";
     });
   }
 
-  // Convert to percentage
   void convertToPercentage() {
     if (number1.isNotEmpty && operand.isNotEmpty && number2.isNotEmpty) {
       calculate();
@@ -142,7 +146,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     });
   }
 
-  // Clear all input
   void clearAll() {
     setState(() {
       number1 = "";
@@ -151,7 +154,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     });
   }
 
-  // Delete last character
   void delete() {
     setState(() {
       if (number2.isNotEmpty) {
@@ -164,7 +166,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     });
   }
 
-  // Append value to the appropriate variable
   void appendValue(String value) {
     if (value != Btn.dot && int.tryParse(value) == null) {
       if (operand.isNotEmpty && number2.isNotEmpty) calculate();
@@ -182,7 +183,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     setState(() {});
   }
 
-  // Get button color based on value
   Color getBtnColor(String value) {
     if ([Btn.del, Btn.clr].contains(value)) {
       return Colors.blueGrey;
