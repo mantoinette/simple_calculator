@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import 'connectivity_service.dart';
+import 'theme_provider.dart';
+import 'battery_service.dart';
 import 'calculator_screen.dart';
 import 'signin_screen.dart';
 import 'signup_screen.dart';
 
 void main() {
+  ConnectivityService(); // Initialize connectivity service
+  BatteryService.instance.initialize(); // Initialize battery service
   runApp(const MyApp());
 }
 
@@ -13,10 +18,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Tab and Drawer Navigation',
-      theme: ThemeData.dark(),
-      home: const MainScreen(),
+    return ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Tab and Drawer Navigation',
+            theme: themeProvider.isDarkMode ? ThemeData.dark() : ThemeData.light(),
+            home: const MainScreen(),
+          );
+        },
+      ),
     );
   }
 }
